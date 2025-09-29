@@ -1,0 +1,80 @@
+name: Terraform (Multi-Cloud)
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+jobs:
+  validate-plan:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        env_path:
+          - envs/aws/staging
+          - envs/aws/production
+          - envs/azure/staging
+          - envs/azure/production
+          - envs/digitalocean/staging
+          - envs/digitalocean/production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.8.5
+
+      - name: Cloud credentials
+        run: echo "Credentials will be taken from repo secrets if present."
+
+      - name: Set AWS creds (if available)
+        if: contains(matrix.env_path, 'aws')
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          test -n "$AWS_ACCESS_KEY_ID" && echo "AWS creds set" || echo "AWS creds not set"
+
+      - name: Set DigitalOcean token (if available)
+        if: contains(matrix.env_path, 'digitalocean')
+        env:
+          DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
+        run: |
+          test -n "$DIGITALOCEAN_TOKEN" && echo "DO token set" || echo "DO token not set"
+
+      - name: Set Azure creds (if available)
+        if: contains(matrix.env_path, 'azure')
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+        run: |
+          if [ -n "$AZURE_CREDENTIALS" ]; then
+            echo "$AZURE_CREDENTIALS" > $HOME/azure.json
+            echo "Wrote azure.json"
+          else
+            echo "AZURE_CREDENTIALS not set"
+          fi
+
+      - name: Terraform fmt
+        run: terraform fmt -check -recursive
+
+      - name: Terraform init
+        working-directory: ${{ matrix.env_path }}
+        run: terraform init -input=false
+
+      - name: Terraform validate
+        working-directory: ${{ matrix.env_path }}
+        run: terraform validate
+
+      - name: Terraform plan
+        working-directory: ${{ matrix.env_path }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+          DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+        run: terraform plan -input=false -lock=false -var="project=mc-demo" -var="public_key_path=$HOME/.ssh/id_rsa.pub"
