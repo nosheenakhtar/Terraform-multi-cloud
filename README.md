@@ -3,7 +3,7 @@
 **Pitch**: *I build infrastructure-as-code across multiple clouds.*  
 This repo demonstrates a clean, reusable **Terraform modules** approach to provision similar stacks on **AWS**, **Azure**, and **DigitalOcean**, with example **staging** and **production** environments and an optional CI workflow.
 
-## ✨ Highlights
+## Highlights
 - Reusable **modules** for each cloud (network + compute).
 - Clear **envs/** for `staging` and `production` per cloud.
 - Opinionated defaults + meaningful tagging.
@@ -25,7 +25,7 @@ This repo demonstrates a clean, reusable **Terraform modules** approach to provi
 
 ---
 
-## 🚀 Quick Start (example: AWS staging)
+## Quick Start (example: AWS staging)
 
 1) **Install** Terraform and cloud CLIs; authenticate:
 ```bash
@@ -52,7 +52,7 @@ Repeat for **Azure** and **DigitalOcean** (see env READMEs for provider auth).
 
 ---
 
-## 🔐 Provider Auth Cheatsheet
+## Provider Auth Cheatsheet
 
 - **AWS**: env vars or `~/.aws/credentials`.
 - **Azure**: set `AZURE_SUBSCRIPTION_ID`, `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET` *or* use `az login` + `use_azure_cli = true`.
@@ -60,7 +60,7 @@ Repeat for **Azure** and **DigitalOcean** (see env READMEs for provider auth).
 
 ---
 
-## 🧪 CI (GitHub Actions)
+##  CI (GitHub Actions)
 - Runs `terraform fmt -check`, `init`, `validate`, and `plan` across all envs.
 - Requires repo secrets:
   - **AWS**: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`
@@ -71,12 +71,12 @@ Repeat for **Azure** and **DigitalOcean** (see env READMEs for provider auth).
 
 ---
 
-## 🧰 Makefile
+##  Makefile
 Convenience commands to `init/plan/apply/destroy` for all envs or a single env.
 
 ---
 
-## ⚠️ Costs & Cleanup
+##  Costs & Cleanup
 Some resources have costs (VMs, public IPs). Use `terraform destroy` when done.
 
 ---
